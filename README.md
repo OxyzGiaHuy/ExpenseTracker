@@ -1,40 +1,108 @@
-<<<<<<< HEAD
-# ExpenseTracker
-=======
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Expense Tracker
 
-## Getting Started
+## Overview
 
-First, run the development server:
+The **Expense Tracker** is a web-based application designed to help users manage their daily expenses. The app supports:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Adding and categorizing expenses.
+- Viewing daily expenses.
+- Analyzing monthly spending with bar and pie charts.
+- Storing data locally using `localStorage`.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. Add Expenses
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Users can input expense details, including:
+  - Name of the expense.
+  - Amount.
+  - Category (e.g., Food, Transportation, etc.).
+- Expenses are recorded with a timestamp and stored locally.
 
-## Learn More
+### 2. Daily Expense Overview
 
-To learn more about Next.js, take a look at the following resources:
+- Displays a list of all expenses recorded for the selected day.
+- Each expense shows:
+  - Name.
+  - Amount.
+  - Category.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 3. Monthly Expense Analysis
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Provides a breakdown of monthly spending using:
+  - **Bar Chart**: Shows total spending per category.
+  - **Pie Chart**: Visualizes the percentage distribution of spending across categories.
+- Users can select any available month for analysis.
 
-## Deploy on Vercel
+### 4. Total Spending Summary
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Displays the total amount spent in the selected month.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
->>>>>>> 7cd2734 (Initial commit from Create Next App)
+## Technologies Used
+
+### Frontend
+
+- **React**: For building user interfaces and managing state.
+- **Recharts**: For rendering interactive charts (bar and pie charts).
+
+### Styling
+
+- **CSS**: For styling components.
+- **Tailwind CSS**: For utility-first styling.
+
+### Data Storage
+
+- **LocalStorage**: For persisting expense data locally in the browser.
+
+## Setup Instructions
+
+### Prerequisites
+
+- Node.js and npm installed on your system. Make sure you have downloaded and installed the latest version of Node.js from [Node.js official website](https://nodejs.org/).
+
+### Steps
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/OxyzGiaHuy/ExpenseTracker.git
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd expense-tracker
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+5. Open your browser and go to `http://localhost:3000` to view the application.
+
+## Usage
+
+### Adding Expenses
+
+1. Enter the expense name and amount.
+2. Select a category from the dropdown.
+3. Click the **Add** button to save the expense.
+
+### Viewing Statistics
+
+1. Use the **Previous Day** and **Next Day** buttons to navigate daily expenses.
+2. Select a month from the dropdown menu to view monthly analysis.
+
+## Future Enhancements
+
+- Add user authentication for personalized expense tracking.
+- Enable cloud storage for syncing data across devices.
+- Provide advanced filtering and search functionality.
+
+## Contributing
+
+Contributions are welcome! Please fork the repository and submit a pull request with your changes.
+
+## License
+
+This project is licensed under the MIT License.

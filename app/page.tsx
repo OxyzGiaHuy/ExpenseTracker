@@ -3,7 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react'; // Import các icon
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Import components UI
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'; // Import components biểu đồ
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'; // Import components biểu đồ
+
+// Định nghĩa kiểu dữ liệu cho chi tiêu
+type Expense = {
+  id: number;
+  name: string;
+  amount: number;
+  category: string;
+  date: string;
+};
 
 // Danh sách các danh mục chi tiêu cố định
 const categories = [
@@ -16,6 +25,9 @@ const categories = [
   "Khác"
 ];
 
+// Thêm mảng màu cho biểu đồ tròn
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
+
 export default function Home() {
   // Khởi tạo state cho danh sách chi tiêu, đọc từ localStorage nếu có
   const [expenses, setExpenses] = useState(() => {
@@ -26,12 +38,16 @@ export default function Home() {
     return [];
   });
   
-  // State cho ngày hiện tại và chi tiêu mới
+  // State cho ngày hiện tại, chi tiêu mới và tháng đang chọn để xem thống kê
   const [currentDate, setCurrentDate] = useState(new Date());
   const [newExpense, setNewExpense] = useState({
     name: '',
     amount: '',
     category: categories[0]
+  });
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const current = new Date();
+    return `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
   });
 
   // Lưu expenses vào localStorage mỗi khi có thay đổi
@@ -72,30 +88,42 @@ export default function Home() {
     setNewExpense({ name: '', amount: '', category: categories[0] }); // Reset form
   };
 
+  // Hàm lấy tất cả các tháng có dữ liệu
+  const getAvailableMonths = () => {
+    const months = new Set();
+    expenses.forEach((expense: Expense) => {
+      const date = new Date(expense.date);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      months.add(monthKey);
+    });
+    return Array.from(months).sort((a, b) => new Date(b as string).getTime() - new Date(a as string).getTime());
+  };
+
   // Tính toán thống kê theo tháng cho biểu đồ
+  // Sửa đổi hàm getMonthlyStats để sử dụng selectedMonth
   const getMonthlyStats = () => {
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
+    const [year, month] = selectedMonth.split('-').map(Number);
     
-    // Lọc chi tiêu trong tháng hiện tại
-    const monthExpenses = expenses.filter(expense => {
+    const monthExpenses: Expense[] = expenses.filter((expense: Expense) => {
       const expenseDate = new Date(expense.date);
-      return expenseDate.getMonth() === currentMonth && 
-             expenseDate.getFullYear() === currentYear;
+      return expenseDate.getMonth() === month - 1 && 
+        expenseDate.getFullYear() === year;
     });
 
-    // Tính tổng cho từng danh mục
-    return categories.map(category => ({
-      name: category,
-      total: monthExpenses
+    return categories.map(category => {
+      const total = monthExpenses
         .filter(e => e.category === category)
-        .reduce((sum, e) => sum + e.amount, 0)
-    }));
+        .reduce((sum, e) => sum + e.amount, 0);
+      return {
+        name: category,
+        total: total
+      };
+    }).filter(item => item.total > 0); // Chỉ hiển thị các danh mục có chi tiêu
   };
 
   // Lấy danh sách chi tiêu của ngày hiện tại
-  const getTodayExpenses = () => {
-    return expenses.filter(expense => {
+  const getTodayExpenses = (): Expense[] => {
+    return expenses.filter((expense: Expense) => {
       const expenseDate = new Date(expense.date);
       return expenseDate.toDateString() === currentDate.toDateString();
     });
@@ -186,19 +214,65 @@ export default function Home() {
       {/* Card biểu đồ thống kê */}
       <Card>
         <CardHeader>
-          <CardTitle>Thống kê tháng {currentDate.getMonth() + 1}/{currentDate.getFullYear()}</CardTitle>
+          <CardTitle className="flex justify-between items-center">
+            <span>Thống kê chi tiêu</span>
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="p-2 border rounded"
+            >
+              {getAvailableMonths().map((month) => (
+                <option key={month as string} value={month as string}>
+                  Tháng {(month as string).split('-')[1]}/{(month as string).split('-')[0]}
+                </option>
+              ))}
+            </select>
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={getMonthlyStats()}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                <Bar dataKey="total" fill="#3b82f6" />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Biểu đồ cột hiện tại */}
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={getMonthlyStats()}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                  <Bar dataKey="total" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            
+            {/* Biểu đồ tròn mới */}
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={getMonthlyStats()}
+                    dataKey="total"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {getMonthlyStats().map((entry, index) => (
+                      <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          
+          {/* Tổng chi tiêu */}
+          <div className="mt-6 p-4 bg-gray-50 rounded">
+            <h4 className="font-semibold">Tổng chi tiêu: {
+              formatCurrency(getMonthlyStats().reduce((sum, item) => sum + item.total, 0))
+            }</h4>
           </div>
         </CardContent>
       </Card>
