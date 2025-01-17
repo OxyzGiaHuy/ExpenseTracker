@@ -1,5 +1,7 @@
 # Expense Tracker
 
+[Check out the live app here](https://simplest-expense-tracker.vercel.app/)
+
 ## Overview
 
 The **Expense Tracker** is a web-based application designed to help users manage their daily expenses. The app supports:
@@ -37,6 +39,11 @@ The **Expense Tracker** is a web-based application designed to help users manage
 ### 4. Total Spending Summary
 
 - Displays the total amount spent in the selected month.
+
+### 5. Delete Expense Records
+
+- Users can remove an expense from the list by clicking the **Delete icon** next to it.
+- The data will be updated in localStorage immediately after deletion.
 
 ## Technologies Used
 
@@ -80,18 +87,9 @@ The **Expense Tracker** is a web-based application designed to help users manage
    ```
 5. Open your browser and go to `http://localhost:3000` to view the application.
 
-## Usage
+## User Interface
 
-### Adding Expenses
-
-1. Enter the expense name and amount.
-2. Select a category from the dropdown.
-3. Click the **Add** button to save the expense.
-
-### Viewing Statistics
-
-1. Use the **Previous Day** and **Next Day** buttons to navigate daily expenses.
-2. Select a month from the dropdown menu to view monthly analysis.
+<img src = "assets/ui.png">
 
 ## Future Enhancements
 
