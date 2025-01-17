@@ -30,24 +30,29 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'
 
 export default function Home() {
   // Khởi tạo state cho danh sách chi tiêu, đọc từ localStorage nếu có
-  const [expenses, setExpenses] = useState(() => {
-    if (typeof window !== 'undefined') { // Kiểm tra môi trường browser
-      const saved = localStorage.getItem('expenses');
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
+  useEffect(() => {
+    const saved = localStorage.getItem('expenses');
+    if (saved) {
+      setExpenses(JSON.parse(saved));
+    }
+    setIsLoading(false);
+  }, []);
+
   // State cho ngày hiện tại, chi tiêu mới và tháng đang chọn để xem thống kê
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(() => new Date().toISOString());
   const [newExpense, setNewExpense] = useState({
     name: '',
     amount: '',
     category: categories[0]
   });
   const [selectedMonth, setSelectedMonth] = useState(() => {
-    const current = new Date();
-    return `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
+    const today = new Date();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+    return `${year}-${month}`;
   });
 
   // Lưu expenses vào localStorage mỗi khi có thay đổi
@@ -58,17 +63,17 @@ export default function Home() {
   // Xử lý chuyển đổi ngày trước/sau
   const handlePrevDay = () => {
     setCurrentDate(prev => {
-      const newDate = new Date(prev);
-      newDate.setDate(prev.getDate() - 1);
-      return newDate;
+      const date = new Date(prev);
+      date.setDate(date.getDate() - 1);
+      return date.toISOString();
     });
   };
 
   const handleNextDay = () => {
     setCurrentDate(prev => {
-      const newDate = new Date(prev);
-      newDate.setDate(prev.getDate() + 1);
-      return newDate;
+      const date = new Date(prev);
+      date.setDate(date.getDate() + 1);
+      return date.toISOString();
     });
   };
 
@@ -79,7 +84,7 @@ export default function Home() {
 
     const expense = {
       ...newExpense,
-      date: currentDate.toISOString(),
+      date: new Date(currentDate).toISOString(),
       id: Date.now(), // Tạo ID duy nhất
       amount: parseFloat(newExpense.amount)
     };
@@ -125,7 +130,7 @@ export default function Home() {
   const getTodayExpenses = (): Expense[] => {
     return expenses.filter((expense: Expense) => {
       const expenseDate = new Date(expense.date);
-      return expenseDate.toDateString() === currentDate.toDateString();
+      return expenseDate.toDateString() === new Date(currentDate).toDateString();
     });
   };
 
@@ -138,6 +143,10 @@ export default function Home() {
   };
 
   // Giao diện người dùng
+  if (isLoading) {
+    return <div className="max-w-4xl mx-auto p-4">Đang tải dữ liệu...</div>;
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       {/* Card nhập liệu chi tiêu */}
@@ -150,7 +159,7 @@ export default function Home() {
               </button>
               <div className="flex items-center gap-2 py-2">
                 <Calendar className="w-5 h-5" />
-                {currentDate.toLocaleDateString('vi-VN')}
+                {new Date(currentDate).toLocaleDateString('vi-VN')}
               </div>
               <button onClick={handleNextDay} className="w-full p-2 hover:bg-gray-100 rounded">
                 <ChevronRight className="w-6 h-6 mx-auto" />
@@ -167,19 +176,19 @@ export default function Home() {
                 placeholder="Tên chi tiêu"
                 value={newExpense.name}
                 onChange={e => setNewExpense(prev => ({ ...prev, name: e.target.value }))}
-                className="flex-1 p-2 border rounded"
+                className="flex-1 px-4 py-2 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <input
                 type="number"
                 placeholder="Số tiền"
                 value={newExpense.amount}
                 onChange={e => setNewExpense(prev => ({ ...prev, amount: e.target.value }))}
-                className="w-32 p-2 border rounded"
+                className="w-32 px-4 py-2 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <select
                 value={newExpense.category}
                 onChange={e => setNewExpense(prev => ({ ...prev, category: e.target.value }))}
-                className="w-40 p-2 border rounded"
+                className="w-40 px-4 py-2 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {categories.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
@@ -187,7 +196,7 @@ export default function Home() {
               </select>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 Thêm
               </button>
