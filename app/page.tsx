@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client' // Chỉ định đây là Client Component trong Next.js, cho phép sử dụng các hooks và tương tác người dùng
 
 import React, { useState, useEffect } from 'react';
