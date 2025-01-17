@@ -142,6 +142,15 @@ export default function Home() {
     }).format(amount);
   };
 
+  // Xóa bản ghi chi tiêu
+  const handleDeleteExpense = (id: number) => {
+  // Hiện hộp thoại xác nhận trước khi xóa
+  if (window.confirm('Bạn có chắc chắn muốn xóa khoản chi tiêu này?')) {
+      // Lọc ra danh sách mới không bao gồm expense có id được chọn
+      setExpenses(prev => prev.filter(expense => expense.id !== id));
+    }
+  };
+
   // Giao diện người dùng
   if (isLoading) {
     return <div className="max-w-4xl mx-auto p-4">Đang tải dữ liệu...</div>;
@@ -207,12 +216,37 @@ export default function Home() {
           <div className="mt-6 space-y-4">
             {getTodayExpenses().map(expense => (
               <div key={expense.id} className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                <div>
-                  <div className="font-medium">{expense.name}</div>
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900">{expense.name}</div>
                   <div className="text-sm text-gray-600">{expense.category}</div>
                 </div>
-                <div className="font-medium">
-                  {formatCurrency(expense.amount)}
+                <div className="flex items-center gap-4">
+                  <div className="font-medium text-gray-900">
+                    {formatCurrency(expense.amount)}
+                  </div>
+                  <button
+                    onClick={() => handleDeleteExpense(expense.id)}
+                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                    title="Xóa chi tiêu"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M3 6h18" />
+                      <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6" />
+                      <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                      <line x1="10" y1="11" x2="10" y2="17" />
+                      <line x1="14" y1="11" x2="14" y2="17" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             ))}
