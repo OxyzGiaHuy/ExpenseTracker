@@ -20,14 +20,16 @@ const categories = [
   "Ăn uống",
   "Di chuyển",
   "Mua sắm",
+  "Học tập",
   "Giải trí",
   "Hóa đơn",
   "Y tế",
+  "Tắm giặt",
   "Khác"
 ];
 
 // Thêm mảng màu cho biểu đồ tròn
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#FF69B4', '#4B0082'];
 
 export default function Home() {
   // Khởi tạo state cho danh sách chi tiêu, đọc từ localStorage nếu có
@@ -158,12 +160,12 @@ export default function Home() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
+    <div className="max-w-6xl mx-auto p-4 space-y-6">
       {/* Card nhập liệu chi tiêu */}
       <Card>
         <CardHeader>
           <CardTitle>
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center justify-center gap-4">
               <button onClick={handlePrevDay} className="w-full p-2 hover:bg-gray-100 rounded">
                 <ChevronLeft className="w-6 h-6 mx-auto" />
               </button>
@@ -258,7 +260,7 @@ export default function Home() {
       {/* Card biểu đồ thống kê */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex justify-between items-center">
+          <CardTitle className="flex justify-between items-center gap-4">
             <span>Thống kê chi tiêu</span>
             <select
               value={selectedMonth}
@@ -283,7 +285,12 @@ export default function Home() {
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                  <Bar dataKey="total" fill="#3b82f6" />
+                  <Bar dataKey="total" fill={COLORS[0]}>
+                    {/* Thêm các Cell để match màu với biểu đồ tròn */}
+                    {getMonthlyStats().map((entry, index) => (
+                      <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -320,6 +327,11 @@ export default function Home() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Thêm credit */}
+      <footer className="text-center text-gray-500 text-sm py-4">
+        Made with ❤️ by Gia Huy Thai
+      </footer>
     </div>
   );
 }
