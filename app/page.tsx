@@ -2,9 +2,21 @@
 'use client' // Chỉ định đây là Client Component trong Next.js, cho phép sử dụng các hooks và tương tác người dùng
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react'; // Import các icon
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Import components UI
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'; // Import components biểu đồ
+import { 
+  Calendar,
+  ChevronLeft, ChevronRight,
+  Utensils, // Ăn uống
+  Car, // Di chuyển
+  ShoppingBag, // Mua sắm
+  GraduationCap, // Học tập
+  Gamepad2, // Giải trí
+  Receipt, // Hóa đơn
+  Stethoscope, // Y tế
+  Bath, // Tắm giặt 
+  MoreHorizontal // Khác
+} from 'lucide-react';
 
 // Định nghĩa kiểu dữ liệu cho chi tiêu
 type Expense = {
@@ -28,8 +40,52 @@ const categories = [
   "Khác"
 ];
 
-// Thêm mảng màu cho biểu đồ tròn
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#FF69B4', '#4B0082'];
+// Cập nhật bảng màu với các màu tương phản hơn
+const COLORS = [
+  '#FF6B6B', // Đỏ san hô
+  '#4ECDC4', // Xanh ngọc
+  '#FFD93D', // Vàng
+  '#6C5CE7', // Tím
+  '#A8E6CF', // Xanh mint
+  '#FF8B94', // Hồng
+  '#98DDCA', // Xanh lá nhạt
+  '#FF9A8B', // Cam hồng
+  '#45B7D1'  // Xanh dương
+];
+
+// Icon mapping cho từng category
+const categoryIcons = {
+  "Ăn uống": Utensils,
+  "Di chuyển": Car,
+  "Mua sắm": ShoppingBag,
+  "Học tập": GraduationCap,
+  "Giải trí": Gamepad2,
+  "Hóa đơn": Receipt,
+  "Y tế": Stethoscope,
+  "Tắm giặt": Bath,
+  "Khác": MoreHorizontal
+};
+
+// Custom label cho biểu đồ tròn
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: { cx: number, cy: number, midAngle: number, innerRadius: number, outerRadius: number, percent: number, name: string }) => {
+  const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) * 1.4; // Tăng khoảng cách để tránh chồng chéo
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <text 
+      x={x} 
+      y={y} 
+      fill="black" 
+      textAnchor={x > cx ? 'start' : 'end'} 
+      dominantBaseline="central"
+      fontSize={12}
+    >
+      {`${name} (${(percent * 100).toFixed(0)}%)`}
+    </text>
+  );
+};
 
 export default function Home() {
   // Khởi tạo state cho danh sách chi tiêu, đọc từ localStorage nếu có
@@ -145,6 +201,16 @@ export default function Home() {
     }).format(amount);
   };
 
+  // Định dạng hiển thị số
+  const formatCompactNumber = (number: number) => {
+    if (number >= 1000000) {
+      return (number / 1000000).toFixed(1) + 'tr';
+    } else if (number >= 1000) {
+      return (number / 1000).toFixed(1) + 'k';
+    }
+    return number;
+  }
+
   // Xóa bản ghi chi tiêu
   const handleDeleteExpense = (id: number) => {
   // Hiện hộp thoại xác nhận trước khi xóa
@@ -152,6 +218,18 @@ export default function Home() {
       // Lọc ra danh sách mới không bao gồm expense có id được chọn
       setExpenses(prev => prev.filter(expense => expense.id !== id));
     }
+  };
+
+  // Hàm để render icon cho XAxis
+  const renderCategoryIcon = (props: { x: number; y: number; payload: { value: string } }) => {
+    const { x, y, payload } = props;
+    const IconComponent = categoryIcons[payload.value as keyof typeof categoryIcons];
+    
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <IconComponent size={16} strokeWidth={2} className="text-gray-600" />
+      </g>
+    );
   };
 
   // Giao diện người dùng
@@ -261,7 +339,7 @@ export default function Home() {
       <Card>
         <CardHeader>
           <CardTitle className="flex justify-between items-center gap-4">
-            <span>Thống kê chi tiêu</span>
+            <span>Thống kê chi tiêu </span>
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
@@ -280,11 +358,22 @@ export default function Home() {
             {/* Biểu đồ cột hiện tại */}
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={getMonthlyStats()}>
+                <BarChart data={getMonthlyStats()} margin={{ left: 20, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={renderCategoryIcon}
+                    interval={0}
+                    height={40}
+                  />
+                  <YAxis 
+                    width={80} // Điều chỉnh độ rộng của trục Y
+                    tickFormatter={(value) => String(formatCompactNumber(value))} // Định dạng số
+                  />
+                  <Tooltip 
+                    formatter={(value) => formatCurrency(Number(value))}
+                    labelFormatter={(label) => `${label}`} // Hiển thị tên category đầy đủ trong tooltip
+                  />
                   <Bar dataKey="total" fill={COLORS[0]}>
                     {/* Thêm các Cell để match màu với biểu đồ tròn */}
                     {getMonthlyStats().map((entry, index) => (
@@ -306,14 +395,23 @@ export default function Home() {
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
-                    label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    labelLine={true}
+                    label={renderCustomizedLabel}
                   >
                     {getMonthlyStats().map((entry, index) => (
                       <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                  <Legend />
+                  <Legend formatter={(value) => {
+                    const IconComponent = categoryIcons[value as keyof typeof categoryIcons];
+                    return (
+                      <span className="flex items-center gap-2">
+                        <IconComponent size={16} className="inline" />
+                        {value}
+                      </span>
+                    );
+                  }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
